@@ -379,6 +379,18 @@ def write_daily_parquet(trade_date: str, frames: list[pd.DataFrame]) -> Path:
 def resolve_mode(requested: str) -> str:
     if requested != "auto":
         return requested
+    # Unfinished checkpoint work must continue even after we already have
+    # >=5 daily files; otherwise a year-long backfill would stall at day 5.
+    cp = load_checkpoint()
+    unfinished = bool(cp.get("in_progress_date") or cp.get("pending_dates"))
+    if unfinished and cp.get("mode") in {"backfill", "daily"}:
+        log.info(
+            "auto → %s (resume checkpoint; pending=%d in_progress=%s)",
+            cp["mode"],
+            len(cp.get("pending_dates") or []),
+            cp.get("in_progress_date"),
+        )
+        return str(cp["mode"])
     n = len(existing_daily_dates())
     mode = "backfill" if n < MIN_HISTORY_DAYS_FOR_DAILY else "daily"
     log.info("auto → %s (existing daily files=%d)", mode, n)
