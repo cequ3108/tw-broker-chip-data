@@ -4,10 +4,10 @@
     "2025-09-09"
   ],
   "last_completed_date": "2025-09-09",
-  "message": "paused (max_requests reached); in_progress=2025-09-10/4935; pending=240",
+  "message": "paused (max_requests reached); in_progress=2025-09-10/6742; pending=240",
   "mode": "backfill",
   "paused": true,
   "requests_used_last_run": 500,
-  "updated_at": "2026-09-07T09:25:49.513833+00:00",
-  "updated_at_taipei": "2026-09-07T17:25:49.513841+08:00"
+  "updated_at": "2026-09-07T10:34:59.466696+00:00",
+  "updated_at_taipei": "2026-09-07T18:34:59.466706+08:00"
 }
