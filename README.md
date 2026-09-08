@@ -28,7 +28,7 @@
 ```bash
 pip install -r requirements.txt
 export FINMIND_TOKEN=***   # 勿寫入程式碼或 commit
-python3 scripts/fetch_branch_daily.py --mode auto --max-requests 500
+python3 scripts/fetch_branch_daily.py --mode auto --max-requests 5500
 ```
 
 `auto` 會判斷：
@@ -39,8 +39,9 @@ python3 scripts/fetch_branch_daily.py --mode auto --max-requests 500
 
 **回補順序：由最近交易日往過去補**（newest → oldest），讓近半年先到位；同一天若已有 partial 會先做完再換日。
 
-流量限制：FinMind Sponsor 約 600 req/hour；實務每輪最多約 500。  
-一日全市場約 2000+ requests，需數小時／多次續跑。遇到 HTTP 429 會退避重試並保留 checkpoint。
+流量限制：FinMind token 約 **6000 req/hour**；實務每輪預設 **5500**（預留約 500 次給你臨時查詢）。  
+實測約 3.5～4 req/秒 → 5500 次大約 **25 分鐘**打完，然後等小時配額回復再續跑。  
+一日全市場約 2000 req（目前宇宙約 1968 檔）→ 理論上 **每小時可補約 2～3 個交易日**。遇到 HTTP 429 會退避重試並保留 checkpoint。
 
 ## 排程建議
 

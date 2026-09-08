@@ -13,8 +13,9 @@ Modes:
   backfill — fetch ~1 year of market-wide branch data with checkpoint resume.
              Missing dates are processed newest → oldest so recent coverage lands first.
 
-Rate limit: FinMind Sponsor ~600 req/hour. Default --max-requests 500.
-Do not use storage_objects (SponsorPro only).
+Rate limit: FinMind token plan ~6000 req/hour. Default --max-requests 5500
+(leave ~500/hour headroom for manual queries). Do not use storage_objects
+(SponsorPro only).
 """
 
 from __future__ import annotations
@@ -66,9 +67,12 @@ OUTPUT_COLUMNS = [
 
 MIN_HISTORY_DAYS_FOR_DAILY = 5
 BACKFILL_CALENDAR_DAYS = 365
-DEFAULT_MAX_REQUESTS = 500
+DEFAULT_MAX_REQUESTS = 5500
 REQUEST_SLEEP_SEC = 0.05
 HTTP_TIMEOUT = 60
+# FinMind token quota is about 6000 req/hour; keep headroom for ad-hoc queries.
+HOURLY_QUOTA = 6000
+HOURLY_HEADROOM = 500
 
 logging.basicConfig(
     level=logging.INFO,
@@ -706,7 +710,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--max-requests",
         type=int,
         default=DEFAULT_MAX_REQUESTS,
-        help=f"stop before exceeding FinMind hourly budget (default {DEFAULT_MAX_REQUESTS})",
+        help=(
+            "stop before exceeding FinMind hourly budget "
+            f"(default {DEFAULT_MAX_REQUESTS}; plan ~{HOURLY_QUOTA}/hour, "
+            f"keep ~{HOURLY_HEADROOM} headroom)"
+        ),
     )
     return p.parse_args(argv)
 
