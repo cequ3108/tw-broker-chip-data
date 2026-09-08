@@ -25,6 +25,13 @@ python scripts/fetch_branch_daily.py --mode auto --max-requests 500
 流量限制：FinMind Sponsor 約 600 req/hour；實務每輪最多約 500。  
 一日全市場約 2100+ requests，需數小時／多次續跑。遇到 HTTP 429 會退避重試並保留 checkpoint。
 
-## 排程建議
+## 分點建倉雷達
 
-每個交易日 21:15（Asia/Taipei）執行；若 `state/checkpoint.json` 仍有 `in_progress_date` 或 `pending_dates`，下一小時／下次排程再跑同一指令即可。
+排除外資／自營後，掃描國內分點累計淨買超（`buy_amt - sell_amt`）：
+
+```bash
+python3 scripts/radar_branch_accumulation.py --min-net-yi 50
+```
+
+預設門檻 50 億、並排除總公司型簡稱（如「富邦」「凱基」）；若要連總公司帳戶一起看可加 `--include-hq`。  
+資料覆蓋取決於 `data/daily/` 已回補天數。
