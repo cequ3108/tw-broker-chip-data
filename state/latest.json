@@ -7,13 +7,16 @@
     "2025-09-12",
     "2025-09-15",
     "2025-09-16",
-    "2025-09-17"
+    "2025-09-17",
+    "2026-09-02",
+    "2026-09-03",
+    "2026-09-04"
   ],
-  "last_completed_date": "2025-09-17",
-  "message": "paused (max_requests reached); in_progress=2026-09-04/2712; pending=234",
+  "last_completed_date": "2026-09-02",
+  "message": "paused (max_requests reached); in_progress=2026-09-01/1465; pending=231",
   "mode": "backfill",
   "paused": true,
-  "requests_used_last_run": 500,
-  "updated_at": "2026-09-08T10:48:39.226377+00:00",
-  "updated_at_taipei": "2026-09-08T18:48:39.226386+08:00"
+  "requests_used_last_run": 5500,
+  "updated_at": "2026-09-08T12:26:43.875614+00:00",
+  "updated_at_taipei": "2026-09-08T20:26:43.875624+08:00"
 }
