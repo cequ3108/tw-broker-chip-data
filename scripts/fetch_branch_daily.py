@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """Fetch Taiwan stock branch (分點) chip data from FinMind.
 
+Data source (only):
+  FinMind REST API — TaiwanStockTradingDailyReport
+  GET /api/v4/taiwan_stock_trading_daily_report?data_id={stock_id}&date={YYYY-MM-DD}
+  One stock × one date = one request (Sponsor cannot use storage_objects whole-day parquet).
+
 Modes:
   auto     — if fewer than 5 daily parquet files exist, backfill ~1 year;
              otherwise fill recent missing trading days.
   daily    — fill missing trading days since last complete file (or last N days).
   backfill — fetch ~1 year of market-wide branch data with checkpoint resume.
+             Missing dates are processed newest → oldest so recent coverage lands first.
 
 Rate limit: FinMind Sponsor ~600 req/hour. Default --max-requests 500.
-One stock × one date = one request. Do not use storage_objects (SponsorPro only).
+Do not use storage_objects (SponsorPro only).
 """
 
 from __future__ import annotations
@@ -412,15 +418,22 @@ def build_target_dates(
         for d in pending:
             if d == in_progress or d not in have:
                 resumed.append(d)
-        # Unique preserve order
+        # Unique, then newest-first. Keep an in-progress day at the front so its
+        # partial parquet / completed_stocks are not abandoned mid-day.
         seen: set[str] = set()
-        out = []
+        uniq: list[str] = []
         for d in resumed:
             if d not in seen:
                 seen.add(d)
-                out.append(d)
-        if out:
-            log.info("Resuming %d pending/in-progress dates", len(out))
+                uniq.append(d)
+        if uniq:
+            rest = sorted([d for d in uniq if d != in_progress], reverse=True)
+            out = ([in_progress] if in_progress and in_progress in uniq else []) + rest
+            log.info(
+                "Resuming %d pending/in-progress dates (newest-first after in_progress); head=%s",
+                len(out),
+                out[:5],
+            )
             return out
 
     end = data_asof_date()
@@ -441,9 +454,12 @@ def build_target_dates(
     trading = fetch_trading_dates(client, start, end)
     have = set(existing_daily_dates())
     targets = [d for d in trading if d not in have]
+    # Always fill from the newest missing date backwards so recent half-year
+    # coverage arrives first (FinMind Sponsor cannot use whole-day storage_objects).
+    targets = sorted(targets, reverse=True)
     if mode == "daily":
-        # Prefer recent gaps only; keep chronological order.
-        targets = targets[-10:]
+        # Prefer the most recent gaps only.
+        targets = targets[:10]
     log.info("Target dates (%d): %s%s", len(targets), targets[:5], " ..." if len(targets) > 5 else "")
     return targets
 
@@ -465,8 +481,20 @@ def fetch_one_day(
     partial_path = STATE_DIR / f"partial_{trade_date}.parquet"
     if partial_path.exists():
         try:
-            frames.append(pd.read_parquet(partial_path))
-            log.info("Loaded partial %s rows=%d", partial_path.name, len(frames[-1]))
+            partial_df = pd.read_parquet(partial_path)
+            frames.append(partial_df)
+            # If checkpoint completed_stocks was cleared (e.g. queue reordered to
+            # newest-first), recover progress from the partial file.
+            if "stock_id" in partial_df.columns:
+                completed |= set(partial_df["stock_id"].astype(str).unique().tolist())
+            remaining = [s for s in stock_ids if s not in completed]
+            log.info(
+                "Loaded partial %s rows=%d recovered_stocks=%d remaining=%d",
+                partial_path.name,
+                len(partial_df),
+                len(completed),
+                len(remaining),
+            )
         except Exception as exc:  # noqa: BLE001
             log.warning("Failed reading partial file: %s", exc)
 
