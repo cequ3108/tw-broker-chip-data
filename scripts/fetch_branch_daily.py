@@ -13,6 +13,12 @@ Modes:
   backfill — fetch ~1 year of market-wide branch data with checkpoint resume.
              Missing dates are processed newest → oldest so recent coverage lands first.
 
+Priority (all modes):
+  After ~21:00 Asia/Taipei, FinMind same-day prints are treated as available
+  (see data_asof_date). Whenever the as-of trading day is still missing, it is
+  fetched FIRST — even if a historical backfill day is in progress — then
+  historical pending dates resume.
+
 Rate limit: FinMind token plan ~6000 req/hour. Default --max-requests 5500
 (leave ~500/hour headroom for manual queries). Do not use storage_objects
 (SponsorPro only).
@@ -407,9 +413,35 @@ def resolve_mode(requested: str) -> str:
     return mode
 
 
+def prioritize_asof_date(
+    client: FinMindClient, targets: list[str], have: set[str]
+) -> list[str]:
+    """Put today's (as-of) trading day first when it is still missing.
+
+    Branch prints typically publish ~21:00 Taipei. data_asof_date() already
+    maps pre-21:00 → yesterday. Historical in-progress days stay in the queue
+    (partial parquet recovers completed_stocks when we return to them).
+    """
+    asof = data_asof_date().isoformat()
+    if asof in have:
+        return targets
+    asof_day = date.fromisoformat(asof)
+    trading = fetch_trading_dates(client, asof_day, asof_day)
+    if asof not in trading:
+        return targets
+    rest = [d for d in targets if d != asof]
+    if not targets or targets[0] != asof:
+        log.info(
+            "Priority: as-of %s first (catch up latest session before historical backfill)",
+            asof,
+        )
+    return [asof] + rest
+
+
 def build_target_dates(
     client: FinMindClient, mode: str, cp: dict[str, Any]
 ) -> list[str]:
+    have = set(existing_daily_dates())
     # Resume pending queue first if present and mode matches / unset.
     pending = [d for d in (cp.get("pending_dates") or []) if isinstance(d, str)]
     in_progress = cp.get("in_progress_date")
@@ -417,13 +449,13 @@ def build_target_dates(
         pending = [in_progress] + pending
     if pending and (cp.get("mode") in {None, mode}):
         # Drop dates already fully written (unless currently in progress).
-        have = set(existing_daily_dates())
         resumed = []
         for d in pending:
             if d == in_progress or d not in have:
                 resumed.append(d)
-        # Unique, then newest-first. Keep an in-progress day at the front so its
-        # partial parquet / completed_stocks are not abandoned mid-day.
+        # Unique, then newest-first. Keep an in-progress day near the front so its
+        # partial parquet / completed_stocks are not abandoned mid-day — unless
+        # the as-of (latest session) day must preempt it.
         seen: set[str] = set()
         uniq: list[str] = []
         for d in resumed:
@@ -433,8 +465,9 @@ def build_target_dates(
         if uniq:
             rest = sorted([d for d in uniq if d != in_progress], reverse=True)
             out = ([in_progress] if in_progress and in_progress in uniq else []) + rest
+            out = prioritize_asof_date(client, out, have)
             log.info(
-                "Resuming %d pending/in-progress dates (newest-first after in_progress); head=%s",
+                "Resuming %d pending/in-progress dates (as-of first, then newest-first); head=%s",
                 len(out),
                 out[:5],
             )
@@ -445,9 +478,9 @@ def build_target_dates(
     if mode == "backfill":
         start = end - timedelta(days=BACKFILL_CALENDAR_DAYS)
     else:
-        have = existing_daily_dates()
-        if have:
-            start = date.fromisoformat(have[-1]) + timedelta(days=1)
+        have_list = existing_daily_dates()
+        if have_list:
+            start = date.fromisoformat(have_list[-1]) + timedelta(days=1)
         else:
             start = end - timedelta(days=14)
         # Also re-check a short lookback window for gaps.
@@ -464,6 +497,7 @@ def build_target_dates(
     if mode == "daily":
         # Prefer the most recent gaps only.
         targets = targets[:10]
+    targets = prioritize_asof_date(client, targets, have)
     log.info("Target dates (%d): %s%s", len(targets), targets[:5], " ..." if len(targets) > 5 else "")
     return targets
 

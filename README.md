@@ -37,7 +37,9 @@ python3 scripts/fetch_branch_daily.py --mode auto --max-requests 5500
 - 已有資料 → `daily`（補最近缺的交易日）
 - 若 checkpoint 尚有 `pending_dates`／`in_progress_date` → 繼續未完成工作
 
-**回補順序：由最近交易日往過去補**（newest → oldest），讓近半年先到位；同一天若已有 partial 會先做完再換日。
+**優先順序（重要）**：台北時間約 **21:00 後**，若「最新可抓交易日」（通常是今天）還沒進 `data/daily/`，會**插到佇列最前面先抓完**，再繼續歷史回補。21:00 前則以昨天為最新可抓日。歷史日若被暫時打斷，`state/partial_*.parquet` 可續跑。
+
+**回補順序：由最近交易日往過去補**（newest → oldest），讓近半年先到位。
 
 流量限制：FinMind token 約 **6000 req/hour**；實務每輪預設 **5500**（預留約 500 次給你臨時查詢）。  
 實測約 3.5～4 req/秒 → 5500 次大約 **25 分鐘**打完，然後等小時配額回復再續跑。  
@@ -45,7 +47,7 @@ python3 scripts/fetch_branch_daily.py --mode auto --max-requests 5500
 
 ## 排程建議
 
-每個交易日 21:15（Asia/Taipei）執行；若 `state/checkpoint.json` 仍有 `in_progress_date` 或 `pending_dates`，下一小時／下次排程再跑同一指令即可。
+每個交易日 **21:15（Asia/Taipei）** 先跑一輪（優先抓當日）；若仍有歷史 `pending_dates`，之後每小時再續跑同一指令即可。
 
 ## 分點建倉雷達
 
