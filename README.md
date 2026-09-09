@@ -57,3 +57,12 @@ python3 scripts/radar_branch_accumulation.py --min-net-yi 50
 
 預設門檻 50 億、並排除總公司型簡稱（如「富邦」「凱基」）；若要連總公司帳戶一起看可加 `--include-hq`。  
 資料覆蓋取決於 `data/daily/` 已回補天數。
+
+### 低檔鎖倉型分點（買多賣少、長時間淨買、建倉≥10億）
+
+```bash
+python3 scripts/radar_lock_chip.py --min-net-yi 10 --start 2026-07-29 --end 2026-09-04
+```
+
+額外條件：買進金額占比高、賣／買比低、多數有成交日為淨買、且多數買進落在該股區間內相對低檔日（需 `FINMIND_TOKEN` 抓日線）。  
+「匯立」等電子交易帳戶可能混有機構／演算法流量，解讀時請與一般營業分點分開看。
