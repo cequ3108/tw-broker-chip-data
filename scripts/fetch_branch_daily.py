@@ -214,6 +214,23 @@ class FinMindClient:
     def _count_request(self) -> None:
         self.stats.requests_used += 1
 
+    @staticmethod
+    def _is_quota_or_ban_message(msg: str) -> bool:
+        lower = msg.lower()
+        needles = (
+            "rate limit",
+            "too many request",
+            "upper limit",
+            "reach the upper limit",
+            "requests reach",
+            "ip banned",
+            "ip ban",
+            "quota",
+        )
+        return any(n in lower for n in needles) or (
+            "limit" in lower and "finmind" in lower
+        )
+
     @retry(
         retry=retry_if_exception_type((RateLimitError, requests.RequestException)),
         wait=wait_exponential(multiplier=2, min=5, max=180),
@@ -227,6 +244,9 @@ class FinMindClient:
         if resp.status_code == 429:
             log.warning("HTTP 429 rate limited; backing off")
             raise RateLimitError("HTTP 429")
+        if resp.status_code == 403:
+            # FinMind may ban the IP after sustained quota abuse; pause the run.
+            raise RateLimitError(f"HTTP 403: {resp.text[:200]}")
         if resp.status_code >= 500:
             raise requests.RequestException(f"HTTP {resp.status_code}")
         try:
@@ -240,15 +260,18 @@ class FinMindClient:
         lower_msg = msg.lower()
         if resp.status_code == 402 or ("sponsor" in lower_msg and "only" in lower_msg):
             raise ApiError(msg or "Sponsor-only dataset")
-        if "rate limit" in lower_msg or "too many request" in lower_msg:
-            log.warning("FinMind rate-limit message: %s", msg)
+        if self._is_quota_or_ban_message(msg):
+            log.warning("FinMind quota/ban message: %s", msg)
             raise RateLimitError(msg)
         if resp.status_code >= 400:
             raise ApiError(f"HTTP {resp.status_code}: {msg or payload}")
         ok = status in {200, "200"} or status_s in {"", "success", "ok"}
+        # Even on HTTP 200, FinMind may return an empty payload with a quota msg.
+        if self._is_quota_or_ban_message(msg) or (
+            not ok and payload.get("data") in (None, []) and "limit" in lower_msg
+        ):
+            raise RateLimitError(msg or "quota/limit")
         if not ok and payload.get("data") is None:
-            if "limit" in lower_msg:
-                raise RateLimitError(msg)
             raise ApiError(msg or f"Unexpected status={status}")
         return payload
 
@@ -580,8 +603,31 @@ def fetch_one_day(
                 pd.concat(frames, ignore_index=True).to_parquet(partial_path, index=False)
             cp["completed_stocks"] = sorted(completed)
             save_checkpoint(cp)
+            log.warning(
+                "Pausing on quota/ban at %s stock=%s (%d/%d done markers)",
+                trade_date,
+                stock_id,
+                len(completed),
+                len(stock_ids),
+            )
             return "paused"
         except Exception as exc:  # noqa: BLE001
+            # Quota/ban messages must never be treated as "stock has no prints".
+            err_s = str(exc)
+            if FinMindClient._is_quota_or_ban_message(err_s) or "403" in err_s:
+                stats.paused = True
+                stats.pause_reason = f"rate limited: {exc}"
+                stats.in_progress_date = trade_date
+                stats.in_progress_stock = stock_id
+                stats.errors.append(f"{trade_date}/{stock_id}: rate limited")
+                if batch_frames:
+                    frames.extend(batch_frames)
+                    pd.concat(frames, ignore_index=True).to_parquet(
+                        partial_path, index=False
+                    )
+                cp["completed_stocks"] = sorted(completed)
+                save_checkpoint(cp)
+                return "paused"
             # Skip individual stock failure but keep going; empty means no branch prints.
             msg = f"{trade_date}/{stock_id}: {exc}"
             log.warning(msg)
@@ -609,6 +655,40 @@ def fetch_one_day(
 
     if batch_frames:
         frames.extend(batch_frames)
+
+    # Refuse to finalize a thin/corrupt day (e.g. quota exhaustion marked empty
+    # responses as done). Keep progress as partial and pause for retry.
+    preview = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    covered = (
+        int(preview["stock_id"].astype(str).nunique())
+        if not preview.empty and "stock_id" in preview.columns
+        else 0
+    )
+    min_cover = max(1, int(len(stock_ids) * 0.85))
+    if covered < min_cover:
+        if not preview.empty:
+            preview.to_parquet(partial_path, index=False)
+        # Only count stocks that actually produced rows as completed.
+        if not preview.empty and "stock_id" in preview.columns:
+            completed = set(preview["stock_id"].astype(str).unique().tolist())
+        else:
+            completed = set()
+        cp["completed_stocks"] = sorted(completed)
+        cp["in_progress_date"] = trade_date
+        save_checkpoint(cp)
+        stats.paused = True
+        stats.pause_reason = (
+            f"incomplete day coverage {covered}/{len(stock_ids)} < {min_cover}"
+        )
+        stats.in_progress_date = trade_date
+        log.error(
+            "Refusing to finalize %s with only %d/%d stocks; kept partial for retry",
+            trade_date,
+            covered,
+            len(stock_ids),
+        )
+        return "paused"
+
     write_daily_parquet(trade_date, frames)
     if partial_path.exists():
         partial_path.unlink()
