@@ -103,15 +103,11 @@
     "2026-09-09",
     "2026-09-10"
   ],
-  "last_completed_date": "2026-09-09",
-  "message": "Paused after FinMind IP ban/quota; demoted incomplete 2026-09-10; retry later",
+  "last_completed_date": "2026-04-28",
+  "message": "paused (max_requests reached); in_progress=2026-04-27/9949; pending=142",
   "mode": "backfill",
   "paused": true,
   "requests_used_last_run": 5500,
-  "updated_at": "2026-09-10T13:39:19.804049+00:00",
-  "updated_at_taipei": "2026-09-10T21:39:19.804229+08:00",
-  "in_progress_date": "2026-09-10",
-  "errors": [
-    "quota/ip-ban during evening fetch; repaired checkpoint"
-  ]
+  "updated_at": "2026-09-10T16:06:23.977557+00:00",
+  "updated_at_taipei": "2026-09-11T00:06:23.977572+08:00"
 }
