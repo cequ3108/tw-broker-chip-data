@@ -8,6 +8,9 @@
     "2025-09-15",
     "2025-09-16",
     "2025-09-17",
+    "2026-02-24",
+    "2026-02-25",
+    "2026-02-26",
     "2026-03-02",
     "2026-03-03",
     "2026-03-04",
@@ -143,11 +146,11 @@
     "2026-09-10",
     "2026-09-11"
   ],
-  "last_completed_date": "2026-09-11",
-  "message": "paused (rate limited: Requests reach the upper limit. https://finmindtrade.com/); in_progress=2026-02-26/6108; pending=103",
+  "last_completed_date": "2026-02-24",
+  "message": "paused (max_requests reached); in_progress=2026-02-23/3669; pending=100",
   "mode": "backfill",
   "paused": true,
-  "requests_used_last_run": 511,
-  "updated_at": "2026-09-11T14:09:23.784953+00:00",
-  "updated_at_taipei": "2026-09-11T22:09:23.784964+08:00"
+  "requests_used_last_run": 5500,
+  "updated_at": "2026-09-11T16:06:39.386610+00:00",
+  "updated_at_taipei": "2026-09-12T00:06:39.386623+08:00"
 }
