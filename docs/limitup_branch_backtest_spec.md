@@ -143,6 +143,8 @@
 
 該股任一國內分點有「衝量 + 強勢日 + sticky」→ `has_momentum_branch`。記錄最近一次符合的衝量（同日取淨買最大）：`mom_branch*`, `mom_impulse_date`。
 
+**與 Top1 的包含關係（預設參數）：** 當 `--impulse-yi` 等於 `--top1-threshold-yi`（皆 1 億）時，T 日 Top1 淨買 ≥ 1 億 ⇒ 該分點在 T 有衝量，T 又是收盤鎖漲停（強勢日），且 S=T 視為 sticky。因此 `top1_ge_hi` 是 `has_momentum_branch` 的子集；交叉表 `top1_ge_1yi_x_mom / yes_no` 會是空的。這是定義使然，不是實作錯誤。動能旗標仍可能來自 T 之前 lookback 內的衝量（此時 Top1 可以 < 1 億）。
+
 雷達全窗的「至少 2 個衝量日、窗內累計淨買 ≥ 5 億」等 **不用於事件打標**（那些是全窗掃描門檻）。
 
 ### 5.4 雙主力（`dual_main` / `style_group`）

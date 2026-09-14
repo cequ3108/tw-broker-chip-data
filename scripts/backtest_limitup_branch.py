@@ -1000,15 +1000,17 @@ def print_coverage(
     end: str | None,
     trading_missing: list[str] | None,
 ) -> None:
-    print("===== LIMIT-UP × BRANCH BACKTEST =====")
+    print("===== LIMIT-UP × BRANCH BACKTEST =====", flush=True)
     print(
         f"repo chip days: {len(all_chip)} "
-        f"({all_chip[0] if all_chip else '-'} → {all_chip[-1] if all_chip else '-'})"
+        f"({all_chip[0] if all_chip else '-'} → {all_chip[-1] if all_chip else '-'})",
+        flush=True,
     )
     print(
         f"window chip days: {len(window_chip)} "
         f"({window_chip[0] if window_chip else '-'} → {window_chip[-1] if window_chip else '-'})"
-        f"  start={start or all_chip[0] if all_chip else '-'} end={end or (all_chip[-1] if all_chip else '-')}"
+        f"  start={start or all_chip[0] if all_chip else '-'} end={end or (all_chip[-1] if all_chip else '-')}",
+        flush=True,
     )
     if len(all_chip) < 60:
         print("WARNING: chip sample is sparse (<60 files); results are not a full-year study.")
@@ -1034,16 +1036,16 @@ def main(argv: list[str] | None = None) -> int:
     pre = [d for d in all_chip if d < first_t][-args.lookback :]
     feature_chip = pre + window_chip
 
+    print_coverage(
+        all_chip=all_chip,
+        window_chip=window_chip,
+        start=args.start,
+        end=args.end,
+        trading_missing=None,
+    )
     if args.dry_run:
-        print_coverage(
-            all_chip=all_chip,
-            window_chip=window_chip,
-            start=args.start,
-            end=args.end,
-            trading_missing=None,
-        )
-        print("dry-run: skipped price fetch and event construction")
-        print("====================================")
+        print("dry-run: skipped price fetch and event construction", flush=True)
+        print("====================================", flush=True)
         return 0
 
     token = require_token()
@@ -1071,18 +1073,31 @@ def main(argv: list[str] | None = None) -> int:
 
     trading_in_window = [d for d in trading if first_t <= d <= last_t]
     missing_chip = [d for d in trading_in_window if d not in set(window_chip)]
-    print_coverage(
-        all_chip=all_chip,
-        window_chip=window_chip,
-        start=args.start,
-        end=args.end,
-        trading_missing=missing_chip,
-    )
+    if missing_chip:
+        print(
+            f"WARNING: {len(missing_chip)} trading days in the window have no chip parquet "
+            f"(lookback jumps these). head={missing_chip[:8]}",
+            flush=True,
+        )
+        print(
+            f"         missing span hint: {missing_chip[0]} … {missing_chip[-1]}",
+            flush=True,
+        )
     print(
         f"filters: exclude_hq={not args.include_hq} exclude_huili={args.exclude_huili} "
-        f"lookback={args.lookback} impulse>={args.impulse_yi}億 top1_hi>={args.top1_threshold_yi}億"
+        f"lookback={args.lookback} impulse>={args.impulse_yi}億 top1_hi>={args.top1_threshold_yi}億",
+        flush=True,
     )
-    print("NOTE: associative backtest; T-close entry is not a fillable limit-up print.")
+    print(
+        "NOTE: associative backtest; T-close entry is not a fillable limit-up print.",
+        flush=True,
+    )
+    if abs(args.impulse_yi - args.top1_threshold_yi) < 1e-12:
+        print(
+            "NOTE: impulse-yi == top1-threshold-yi, so Top1>=threshold on T "
+            "implies has_momentum_branch (surge+lock+sticky-at-T).",
+            flush=True,
+        )
 
     info = fetch_stock_info(token, sleep_sec=args.sleep, use_cache=use_cache)
     print(f"universe: {len(info)} ordinary TWSE/TPEx", file=sys.stderr)
