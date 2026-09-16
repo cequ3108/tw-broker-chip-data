@@ -6,7 +6,7 @@
   "note": "Repaired after FinMind quota/IP-ban: demoted incomplete 2026-09-10/04-29/04-28; quota/ban now pauses instead of marking stocks done.",
   "pause_reason": "rate limited: Requests reach the upper limit. https://finmindtrade.com/ (partial corrupt; reset completed_stocks)",
   "pending_dates": [],
-  "requests_used_session": 404,
+  "requests_used_session": 1969,
   "stock_universe": [
     "1101",
     "1102",
@@ -1976,5 +1976,5 @@
     "9960",
     "9962"
   ],
-  "updated_at": "2026-09-15T14:53:57.642090+00:00"
+  "updated_at": "2026-09-16T13:46:21.675504+00:00"
 }
