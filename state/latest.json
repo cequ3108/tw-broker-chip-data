@@ -249,13 +249,14 @@
     "2026-09-11",
     "2026-09-14",
     "2026-09-15",
-    "2026-09-16"
+    "2026-09-16",
+    "2026-09-17"
   ],
-  "last_completed_date": "2026-09-16",
-  "message": "completed dates=['2026-09-16']",
+  "last_completed_date": "2026-09-17",
+  "message": "completed dates=['2026-09-17']",
   "mode": "daily",
   "paused": false,
   "requests_used_last_run": 1969,
-  "updated_at": "2026-09-16T13:46:21.676876+00:00",
-  "updated_at_taipei": "2026-09-16T21:46:21.676885+08:00"
+  "updated_at": "2026-09-17T13:35:47.711746+00:00",
+  "updated_at_taipei": "2026-09-17T21:35:47.711754+08:00"
 }
