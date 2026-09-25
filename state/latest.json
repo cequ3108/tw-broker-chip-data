@@ -258,10 +258,10 @@
     "2026-09-24"
   ],
   "last_completed_date": "2026-09-24",
-  "message": "completed dates=['2026-09-24']",
+  "message": "no missing trading dates",
   "mode": "daily",
   "paused": false,
-  "requests_used_last_run": 1969,
-  "updated_at": "2026-09-24T13:25:16.717587+00:00",
-  "updated_at_taipei": "2026-09-24T21:25:16.717596+08:00"
+  "requests_used_last_run": 3,
+  "updated_at": "2026-09-25T13:30:55.977355+00:00",
+  "updated_at_taipei": "2026-09-25T21:30:55.977364+08:00"
 }
