@@ -77,3 +77,19 @@ python3 scripts/radar_momentum_branch.py --start 2026-07-29 --end 2026-09-04 --e
 
 定義「衝量日」為單日淨買 ≥1 億；若當日常走出長紅（收漲 ≥3%），且後 3 個交易日不大量倒貨，則視為動能型。  
 同股若另有鎖倉型分點，腳本會列出「雙主力」配對。
+
+## 收盤鎖漲停 × 分點回測
+
+對「收盤鎖在漲停價」的股票日，疊加國內分點特徵（當日 Top1/Top3 淨買、鎖倉型、動能型、雙主力），再看 T 收盤之後 T+1 開／收、T+2／T+3／T+5 收的報酬。規格見 [`docs/limitup_branch_backtest_spec.md`](docs/limitup_branch_backtest_spec.md)。
+
+```bash
+export FINMIND_TOKEN=***   # 勿寫入程式碼或 commit
+python3 scripts/backtest_limitup_branch.py --start 2026-01-01 --end 2026-09-11
+```
+
+- 籌碼只用不在 `data/daily/` 缺檔的日期；價格／官方漲停價走 FinMind（`TaiwanStockPrice`、`TaiwanStockPriceLimit`），快取於 `data/cache/price/`
+- 沒有 token 時會失敗並提示；可先 `--dry-run` 只看籌碼覆蓋
+- 預設與雷達相同：排除外資／自營、排除總公司型簡稱（加 `--include-hq` 才保留）；`--exclude-huili` 可把匯立從特徵宇宙拿掉（仍會標 `top1_is_huili`）
+- 結果：`output/limitup_branch_backtest/events.csv`、`summary_by_group.csv`（stdout 也有分組表）
+
+**這是關聯回測，不是因果、也不是可成交策略。** 收盤鎖漲停當日通常買不到；腳本沒有新聞、未成交買盤或封關強度。樣本有缺口（例如 2025-09 中旬到 2025-11 下旬籌碼未齊）時仍會跑有檔的日子並印警告。匯立等電子帳號請當控制變數，不要單獨當成強訊號。
