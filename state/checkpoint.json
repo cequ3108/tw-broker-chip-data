@@ -1,12 +1,14 @@
 {
   "completed_stocks": [],
-  "in_progress_date": null,
+  "in_progress_date": "2026-10-15",
   "in_progress_stock": null,
   "mode": "daily",
-  "note": "Repaired after FinMind quota/IP-ban: demoted incomplete 2026-09-10/04-29/04-28; quota/ban now pauses instead of marking stocks done.",
-  "pause_reason": "rate limited: Requests reach the upper limit. https://finmindtrade.com/ (partial corrupt; reset completed_stocks)",
-  "pending_dates": [],
-  "requests_used_session": 1969,
+  "note": "2026-10-15 paused: FinMind returned register-level then ip banned; markers reset",
+  "pause_reason": "rate limited: register level / ip banned; reset completed_stocks (no partial)",
+  "pending_dates": [
+    "2026-10-15"
+  ],
+  "requests_used_session": 1544,
   "stock_universe": [
     "1101",
     "1102",
@@ -1976,5 +1978,5 @@
     "9960",
     "9962"
   ],
-  "updated_at": "2026-10-14T13:23:52.637740+00:00"
+  "updated_at": "2026-10-15T13:34:08.708320+00:00"
 }

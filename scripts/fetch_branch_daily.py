@@ -226,6 +226,11 @@ class FinMindClient:
             "ip banned",
             "ip ban",
             "quota",
+            # Account tier demotion / free-tier: must pause, never mark stocks done.
+            "your level is register",
+            "level is register",
+            "update your user level",
+            "user level",
         )
         return any(n in lower for n in needles) or (
             "limit" in lower and "finmind" in lower
