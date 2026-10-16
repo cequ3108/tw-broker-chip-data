@@ -3,8 +3,8 @@
   "in_progress_date": "2026-10-15",
   "in_progress_stock": null,
   "mode": "daily",
-  "note": "2026-10-15 paused: FinMind returned register-level then ip banned; markers reset",
-  "pause_reason": "rate limited: register level / ip banned; reset completed_stocks (no partial)",
+  "note": "Evening 2026-10-16 skipped: FinMind still register-level; no hard fetch",
+  "pause_reason": "rate limited: register level (evening 2026-10-16 probe); pending=[2026-10-15]",
   "pending_dates": [
     "2026-10-15"
   ],
