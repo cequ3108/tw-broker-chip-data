@@ -270,10 +270,10 @@
     "2026-10-15"
   ],
   "last_completed_date": "2026-10-15",
-  "message": "completed dates=['2026-10-15']",
+  "message": "paused (incomplete day coverage 0/1967 < 1671); in_progress=2026-10-23/9962; pending=6",
   "mode": "daily",
-  "paused": false,
-  "requests_used_last_run": 1969,
-  "updated_at": "2026-10-26T10:01:08.642986+00:00",
-  "updated_at_taipei": "2026-10-26T18:01:08.642996+08:00"
+  "paused": true,
+  "requests_used_last_run": 1970,
+  "updated_at": "2026-10-26T10:12:00.734921+00:00",
+  "updated_at_taipei": "2026-10-26T18:12:00.734929+08:00"
 }

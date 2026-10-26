@@ -671,6 +671,28 @@ def fetch_one_day(
     )
     min_cover = max(1, int(len(stock_ids) * 0.85))
     if covered < min_cover:
+        # Full universe scan with zero rows = holiday / unpublished session
+        # (e.g. 2330 price calendar false positive). Finalize empty daily so we
+        # do not burn the hourly quota re-scanning the same empty day forever.
+        if covered == 0 and not frames:
+            log.warning(
+                "No branch prints for %s after full universe scan; writing empty daily",
+                trade_date,
+            )
+            write_daily_parquet(trade_date, [])
+            if partial_path.exists():
+                partial_path.unlink()
+            cp["in_progress_date"] = None
+            cp["completed_stocks"] = []
+            cp["pause_reason"] = None
+            pending = [d for d in (cp.get("pending_dates") or []) if d != trade_date]
+            cp["pending_dates"] = pending
+            save_checkpoint(cp)
+            stats.completed_dates.append(trade_date)
+            stats.in_progress_date = None
+            stats.in_progress_stock = None
+            return "completed"
+
         if not preview.empty:
             preview.to_parquet(partial_path, index=False)
         # Only count stocks that actually produced rows as completed.
