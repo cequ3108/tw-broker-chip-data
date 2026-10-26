@@ -1,14 +1,12 @@
 {
   "completed_stocks": [],
-  "in_progress_date": "2026-10-15",
+  "in_progress_date": null,
   "in_progress_stock": null,
   "mode": "daily",
   "note": "Evening 2026-10-16 skipped: FinMind still register-level; no hard fetch",
   "pause_reason": "rate limited: register level (evening 2026-10-16 probe); pending=[2026-10-15]",
-  "pending_dates": [
-    "2026-10-15"
-  ],
-  "requests_used_session": 1544,
+  "pending_dates": [],
+  "requests_used_session": 1969,
   "stock_universe": [
     "1101",
     "1102",
@@ -1978,5 +1976,5 @@
     "9960",
     "9962"
   ],
-  "updated_at": "2026-10-15T13:34:08.708320+00:00"
+  "updated_at": "2026-10-26T10:01:08.641076+00:00"
 }
