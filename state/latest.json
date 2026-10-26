@@ -268,16 +268,17 @@
     "2026-10-13",
     "2026-10-14",
     "2026-10-15",
+    "2026-10-19",
     "2026-10-20",
     "2026-10-21",
     "2026-10-22",
     "2026-10-23"
   ],
-  "last_completed_date": "2026-10-20",
-  "message": "paused (max_requests reached); in_progress=2026-10-19/6791; pending=2",
+  "last_completed_date": "2026-10-19",
+  "message": "paused (rate limited: Requests reach the upper limit. https://finmindtrade.com/); in_progress=2026-10-16/1541; pending=1",
   "mode": "daily",
   "paused": true,
-  "requests_used_last_run": 5500,
-  "updated_at": "2026-10-26T11:38:09.591377+00:00",
-  "updated_at_taipei": "2026-10-26T19:38:09.591396+08:00"
+  "requests_used_last_run": 518,
+  "updated_at": "2026-10-26T12:03:24.139521+00:00",
+  "updated_at_taipei": "2026-10-26T20:03:24.139531+08:00"
 }
