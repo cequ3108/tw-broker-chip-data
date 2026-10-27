@@ -273,13 +273,14 @@
     "2026-10-20",
     "2026-10-21",
     "2026-10-22",
-    "2026-10-23"
+    "2026-10-23",
+    "2026-10-27"
   ],
-  "last_completed_date": "2026-10-23",
-  "message": "no missing trading dates",
+  "last_completed_date": "2026-10-27",
+  "message": "completed dates=['2026-10-27']",
   "mode": "daily",
   "paused": false,
-  "requests_used_last_run": 3,
-  "updated_at": "2026-10-26T13:16:00.623633+00:00",
-  "updated_at_taipei": "2026-10-26T21:16:00.623642+08:00"
+  "requests_used_last_run": 1969,
+  "updated_at": "2026-10-27T13:23:45.220942+00:00",
+  "updated_at_taipei": "2026-10-27T21:23:45.220951+08:00"
 }
