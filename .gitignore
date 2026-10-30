@@ -10,3 +10,5 @@ venv/
 .ipynb_checkpoints/
 tmp/
 .cache/
+output/
+data/cache/
